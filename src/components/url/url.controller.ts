@@ -6,9 +6,9 @@ import { UrlService } from './url.service';
 export class UrlController {
   constructor(private readonly urlService: UrlService) {}
 
-  @Get(':urlId')
-  async redirect(@Res() res, @Param('urlId') urlId: string) {
-    const url = await this.urlService.redirect(urlId);
+  @Get(':urlCode')
+  async redirect(@Res() res, @Param('urlCode') urlCode: string) {
+    const url = await this.urlService.findUrl(urlCode);
     return res.redirect(url.originalUrl);
   }
 
