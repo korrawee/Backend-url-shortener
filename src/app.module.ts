@@ -1,16 +1,21 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ormConfig } from './database/config/ormconfig';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UrlModule } from './components/url/url.module';
+import { MongooseModule } from '@nestjs/mongoose';
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forRoot(ormConfig()),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (config: ConfigService) => ({
+        uri: `mongodb://${config.get<string>('DB_USER')}:${config.get<string>('DB_PASS')}@${config.get<string>('DB_HOST')}:${config.get<string>('DB_PORT')}/${config.get<string>('DB_NAME')}`,
+      }),
+    }),
     UrlModule,
   ],
   controllers: [AppController],

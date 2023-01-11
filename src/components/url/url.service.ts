@@ -4,17 +4,15 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { isURL } from 'class-validator';
-import { Repository } from 'typeorm';
 import { CreateUrlDto } from './dtos/create.dto';
-import { Url } from './entity/url.entity';
 import * as base62 from 'base62';
+import { Model } from 'mongoose';
+import { Url } from './schemas/url.schema';
+import { InjectModel } from '@nestjs/mongoose';
 @Injectable()
 export class UrlService {
-  constructor(
-    @InjectRepository(Url) private readonly urlRepository: Repository<Url>,
-  ) {}
+  constructor(@InjectModel('url') private readonly urlModel: Model<Url>) {}
   counter = 1;
   async createUrl(originalUrl: string): Promise<string> {
     // Check if originalUrl is a valid one
@@ -24,11 +22,11 @@ export class UrlService {
 
     // Declare URL code and baseUrl
     const urlCode: string = base62.encode(this.counter);
-    const baseUrl = 'http://shorturl/';
+    const baseUrl = 'http://shorturl';
 
     try {
       // If the given URL is already shorted then return shorted URL
-      const url = await this.urlRepository.findOneBy({ originalUrl });
+      const url = await this.urlModel.findOne({ originalUrl });
       if (url) {
         return baseUrl + url.urlCode;
       }
@@ -41,8 +39,8 @@ export class UrlService {
         originalUrl: originalUrl,
       };
 
-      const newUrl = this.urlRepository.create(urlDto);
-      await this.urlRepository.save(newUrl);
+      const newUrl = new this.urlModel(urlDto);
+      await newUrl.save();
 
       return shortedUrl;
     } catch (error) {
@@ -53,7 +51,7 @@ export class UrlService {
 
   async findUrl(urlCode: string): Promise<Url> {
     try {
-      const url = await this.urlRepository.findOneBy({ urlCode });
+      const url = await this.urlModel.findOne({ urlCode }).exec();
       if (url) {
         return url;
       }
