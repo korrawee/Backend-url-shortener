@@ -2,14 +2,10 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('url')
 export class Url {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column()
+  @Column({
+    unique: true,
+  })
   urlCode: string;
-
-  @Column()
-  shortedUrl: string;
 
   @Column()
   originalUrl: string;
