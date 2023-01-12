@@ -1,0 +1,42 @@
+version: "3.8"
+services:
+  short-url:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    depends_on:
+      - mongo
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - DB_TYPE=${DB_TYPE}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - DB_NAME=${DB_NAME}
+    env_file:
+      - ./.env
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+    networks:
+      - webnet
+  mongo_db:
+    image: mongo
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    networks:
+      - webnet
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=123456
+      - MONGO_INITDB_DATABASE=${DB_NAME}
+      - MONGO_INITDB_USERNAME=${DB_USER}
+      - MONGO_INITDB_PASSWORD=${DB_PASS}
+    env_file:
+      - ./.env
+    volumes:
+      - ./init-mongo.sh:/docker-entrypoint-initdb.d/init-mongo.sh
+      - ./db:/data/db
+networks:
+  webnet:
+    driver: bridge
