@@ -6,14 +6,15 @@ import {
 } from '@nestjs/common';
 import { isURL } from 'class-validator';
 import { CreateUrlDto } from './dtos/create.dto';
-import * as base62 from 'base62';
 import { Model } from 'mongoose';
 import { Url } from './schemas/url.schema';
 import { InjectModel } from '@nestjs/mongoose';
+import * as bcrypt from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
+
 @Injectable()
 export class UrlService {
-  constructor(@InjectModel('url') private readonly urlModel: Model<Url>) {}
-  counter = 1;
+  constructor(@InjectModel('url') private readonly urlModel: Model<Url>, private readonly configService : ConfigService) {}
   async createUrl(originalUrl: string): Promise<string> {
     // Check if originalUrl is a valid one
     if (!isURL(originalUrl)) {
@@ -21,14 +22,16 @@ export class UrlService {
     }
 
     // Declare URL code and baseUrl
-    const urlCode: string = base62.encode(this.counter);
-    const baseUrl = 'http://shorturl';
+
+    const saltOrRounds = await bcrypt.genSalt();
+    const urlCode: string = await bcrypt.hash(originalUrl, saltOrRounds).then((str: string)=>(str.substring(0,9)));
+    const baseUrl = `http://localhost`;
 
     try {
       // If the given URL is already shorted then return shorted URL
       const url = await this.urlModel.findOne({ originalUrl });
       if (url) {
-        return baseUrl + url.urlCode;
+        return `${baseUrl}/${url.urlCode}`;
       }
 
       // Shorten URL then save it to database
@@ -41,7 +44,6 @@ export class UrlService {
 
       const newUrl = new this.urlModel(urlDto);
       await newUrl.save();
-
       return shortedUrl;
     } catch (error) {
       console.log(error);
