@@ -25,7 +25,7 @@ export class UrlService {
 
     const saltOrRounds = await bcrypt.genSalt();
     const urlCode: string = await bcrypt.hash(originalUrl, saltOrRounds).then((str: string)=>(str.substring(0,9)));
-    const baseUrl = `http://localhost`;
+    const baseUrl = `http://${this.configService.get<string>('APP_HOST')}`;
 
     try {
       // If the given URL is already shorted then return shorted URL
