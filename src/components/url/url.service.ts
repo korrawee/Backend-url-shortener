@@ -14,7 +14,10 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UrlService {
-  constructor(@InjectModel('url') private readonly urlModel: Model<Url>, private readonly configService : ConfigService) {}
+  constructor(
+    @InjectModel('url') private readonly urlModel: Model<Url>,
+    private readonly configService: ConfigService,
+  ) {}
   async createUrl(originalUrl: string): Promise<string> {
     // Check if originalUrl is a valid one
     if (!isURL(originalUrl)) {
@@ -24,7 +27,9 @@ export class UrlService {
     // Declare URL code and baseUrl
 
     const saltOrRounds = await bcrypt.genSalt();
-    const urlCode: string = await bcrypt.hash(originalUrl, saltOrRounds).then((str: string)=>(str.substring(0,9)));
+    const urlCode: string = await bcrypt
+      .hash(originalUrl, saltOrRounds)
+      .then((str: string) => str.substring(0, 9));
     const baseUrl = `http://${this.configService.get<string>('APP_HOST')}`;
 
     try {
