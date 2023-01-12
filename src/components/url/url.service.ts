@@ -11,6 +11,7 @@ import { Url } from './schemas/url.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
+import { createUrlResDto } from './dtos/createRespose.dtp';
 
 @Injectable()
 export class UrlService {
@@ -18,25 +19,26 @@ export class UrlService {
     @InjectModel('url') private readonly urlModel: Model<Url>,
     private readonly configService: ConfigService,
   ) {}
-  async createUrl(originalUrl: string): Promise<string> {
+
+  async createUrl(originalUrl: string): Promise<createUrlResDto> {
     // Check if originalUrl is a valid one
     if (!isURL(originalUrl)) {
       throw new BadRequestException('String Must be a Valid URL');
     }
 
     // Declare URL code and baseUrl
-
     const saltOrRounds = await bcrypt.genSalt();
     const urlCode: string = await bcrypt
       .hash(originalUrl, saltOrRounds)
       .then((str: string) => str.substring(0, 9));
+
     const baseUrl = `http://${this.configService.get<string>('APP_HOST')}`;
 
     try {
       // If the given URL is already shorted then return shorted URL
       const url = await this.urlModel.findOne({ originalUrl });
       if (url) {
-        return `${baseUrl}/${url.urlCode}`;
+        return { shortUrl: `${baseUrl}/${url.urlCode}` };
       }
 
       // Shorten URL then save it to database
@@ -49,7 +51,7 @@ export class UrlService {
 
       const newUrl = new this.urlModel(urlDto);
       await newUrl.save();
-      return shortedUrl;
+      return { shortUrl: shortedUrl };
     } catch (error) {
       console.log(error);
       throw new UnprocessableEntityException('Error from server.');
