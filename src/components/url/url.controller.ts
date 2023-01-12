@@ -12,7 +12,7 @@ export class UrlController {
     return res.redirect(url.originalUrl);
   }
 
-  @Post('shorturl')
+  @Post()
   async createUrl(@Body() body: CreateUrlDto) {
     return await this.urlService.createUrl(body.originalUrl);
   }

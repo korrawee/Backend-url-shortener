@@ -1,6 +1,18 @@
 version: "3.8"
 services:
-  short-url:
+  nginx:
+      image: nginx:1.23.3-alpine
+      container_name: nginx
+      ports:
+        - "80:80"
+      networks:
+        - webnet
+      links:
+        - shorturl
+      volumes:
+        - ./nginx/default.conf:/etc/nginx/nginx.conf
+
+  shorturl:
     build:
       dockerfile: Dockerfile
       context: .
@@ -14,18 +26,21 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASS=${DB_PASS}
       - DB_NAME=${DB_NAME}
+      - APP_HOST=${APP_HOST}
+      - APP_PORT=${APP_PORT}
     env_file:
       - ./.env
-    ports:
-      - ${APP_PORT}:${APP_PORT}
     networks:
       - webnet
+
   mongo_db:
     image: mongo
     ports:
       - ${DB_PORT}:${DB_PORT}
     networks:
       - webnet
+    depends_on:
+      - nginx
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=123456
