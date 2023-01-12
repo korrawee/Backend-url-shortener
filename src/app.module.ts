@@ -13,7 +13,7 @@ import { MongooseModule } from '@nestjs/mongoose';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => ({
-        uri: `mongodb://${config.get<string>('DB_USER')}:${config.get<string>('DB_PASS')}@${config.get<string>('DB_HOST')}:${config.get<string>('DB_PORT')}/${config.get<string>('DB_NAME')}`,
+        uri: `mongodb://${config.get<string>('DB_USER')}:${config.get<string>('DB_PASS')}@mongo_db:${config.get<string>('DB_PORT')}/${config.get<string>('DB_NAME')}`,
       }),
     }),
     UrlModule,
