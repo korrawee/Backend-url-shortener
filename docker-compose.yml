@@ -1,38 +1,18 @@
 version: "3.8"
 services:
-  nginx:
-      image: nginx:1.23.3-alpine
-      container_name: nginx
-      ports:
-        - "80:80"
-      networks:
-        - webnet
-      links:
-        - shorturl
-      volumes:
-        - ./nginx/default.conf:/etc/nginx/nginx.conf
-
   shorturl:
+    container_name: shorturl
     build:
       dockerfile: Dockerfile
       context: .
     depends_on:
       - mongo
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - DB_TYPE=${DB_TYPE}
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_USER=${DB_USER}
-      - DB_PASS=${DB_PASS}
-      - DB_NAME=${DB_NAME}
-      - APP_HOST=${APP_HOST}
-      - APP_PORT=${APP_PORT}
     env_file:
       - ./.env
     networks:
       - webnet
-
+    ports:
+      - ${APP_PORT}:${APP_PORT}
   mongo_db:
     image: mongo
     ports:
