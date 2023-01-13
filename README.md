@@ -1,5 +1,5 @@
 ## Description
-    Short URL backend service using NestJS framework and Docker
+Short URL backend service using NestJS framework and Docker
 ## Installation
 
 - [Docker](https://www.docker.com/get-started/) must be installed
